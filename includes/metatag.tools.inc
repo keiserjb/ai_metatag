@@ -179,7 +179,7 @@ function ai_metatag_tool_get_metatags(array $args) {
     return ['error' => 'Invalid nid.'];
   }
   $node = node_load($nid);
-  if (!$node) {
+  if (!$node || !node_access('view', $node)) {
     return ['error' => 'Node not found.'];
   }
 
@@ -243,7 +243,8 @@ function ai_metatag_tool_list_nodes_missing_metatags(array $args) {
   // Load published node IDs.
   $query = db_select('node', 'n')
     ->fields('n', ['nid', 'title', 'type'])
-    ->condition('n.status', 1);
+    ->condition('n.status', 1)
+    ->addTag('node_access');
   if ($bundle !== '') {
     $query->condition('n.type', $bundle);
   }
@@ -317,6 +318,7 @@ function ai_metatag_tool_list_duplicate_metatag_values(array $args) {
   $query = db_select('node', 'n')
     ->fields('n', ['nid', 'title', 'type'])
     ->condition('n.status', 1)
+    ->addTag('node_access')
     ->orderBy('n.changed', 'DESC')
     ->orderBy('n.nid', 'DESC')
     ->range(0, $scan_cap + 1);
